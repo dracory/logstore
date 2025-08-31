@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gouniverse/uid"
+	"github.com/dracory/uid"
 	_ "github.com/mattn/go-sqlite3"
 )
 

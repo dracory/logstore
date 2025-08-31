@@ -1,8 +1,8 @@
-# Log Store <a href="https://gitpod.io/#https://github.com/gouniverse/logstore" style="float:right:"><img src="https://gitpod.io/button/open-in-gitpod.svg" alt="Open in Gitpod" loading="lazy"></a>
+# Log Store <a href="https://gitpod.io/#https://github.com/dracory/logstore" style="float:right:"><img src="https://gitpod.io/button/open-in-gitpod.svg" alt="Open in Gitpod" loading="lazy"></a>
 
-[![Tests Status](https://github.com/gouniverse/logstore/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/gouniverse/logstore/actions/workflows/tests.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gouniverse/logstore)](https://goreportcard.com/report/github.com/gouniverse/logstore)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/gouniverse/logstore)](https://pkg.go.dev/github.com/gouniverse/logstore)
+[![Tests Status](https://github.com/dracory/logstore/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/dracory/logstore/actions/workflows/tests.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dracory/logstore)](https://goreportcard.com/report/github.com/dracory/logstore)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/dracory/logstore)](https://pkg.go.dev/github.com/dracory/logstore)
 
 Logs messages to a database table.
 
@@ -15,7 +15,7 @@ For commercial use, please use my [contact page](https://lesichkov.co.uk/contact
 
 ## Installation
 ```
-go get -u github.com/gouniverse/logstore
+go get -u github.com/dracory/logstore
 ```
 
 ## Setup
