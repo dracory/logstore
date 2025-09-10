@@ -32,11 +32,11 @@ func TestStoreCreate(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	if store == nil {
-		t.Fatalf("Store could not be created")
+		t.Fatal("Store could not be created")
 	}
 }
 
@@ -56,7 +56,7 @@ func TestStoreCreate(t *testing.T) {
 
 // 	// Test Results
 // 	if s.automigrateEnabled != true {
-// 		t.Fatalf("automigrateEnabled: Expected [true] received [%v]", s.automigrateEnabled)
+// 		t.Fatal("automigrateEnabled: Expected [true] received [%v]", s.automigrateEnabled)
 // 	}
 
 // 	// Initializes automigrateEnabled to True
@@ -72,7 +72,7 @@ func TestStoreCreate(t *testing.T) {
 
 // 	// Test Results
 // 	if s.automigrateEnabled == true {
-// 		t.Fatalf("automigrateEnabled: Expected [true] received [%v]", s.automigrateEnabled)
+// 		t.Fatal("automigrateEnabled: Expected [true] received [%v]", s.automigrateEnabled)
 // 	}
 // }
 
@@ -92,7 +92,7 @@ func TestStoreCreate(t *testing.T) {
 
 // 	// db non Nil expected
 // 	if s.db == nil {
-// 		t.Fatalf("db initialization failed")
+// 		t.Fatal("db initialization failed")
 // 	}
 // }
 
@@ -107,14 +107,14 @@ func TestStoreCreate(t *testing.T) {
 // 	f := WithTableName(table_name)
 // 	f(&s)
 // 	if s.logTableName != table_name {
-// 		t.Fatalf("Expected logTableName [%v], received [%v]", table_name, s.logTableName)
+// 		t.Fatal("Expected logTableName [%v], received [%v]", table_name, s.logTableName)
 // 	}
 // 	// TC: 2
 // 	table_name = "Table2"
 // 	f = WithTableName(table_name)
 // 	f(&s)
 // 	if s.logTableName != table_name {
-// 		t.Fatalf("Expected logTableName [%v], received [%v]", table_name, s.logTableName)
+// 		t.Fatal("Expected logTableName [%v], received [%v]", table_name, s.logTableName)
 // 	}
 // }
 
@@ -129,13 +129,13 @@ func Test_Store_AutoMigrate(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	errAutomigrate := s.AutoMigrate()
 
 	if errAutomigrate != nil {
-		t.Fatalf("Store could not be automigrated: " + errAutomigrate.Error())
+		t.Fatal("Store could not be automigrated: " + errAutomigrate.Error())
 	}
 }
 
@@ -149,7 +149,7 @@ func Test_Store_Log(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	time := time.Now()
@@ -177,7 +177,7 @@ func Test_Store_Debug(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.Debug("debug")
@@ -196,7 +196,7 @@ func Test_Store_DebugWithContext(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.DebugWithContext("debug", "Debug Message")
@@ -215,7 +215,7 @@ func Test_Store_Error(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.Error("error")
@@ -234,7 +234,7 @@ func Test_Store_ErrorWithContext(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.ErrorWithContext("error", "Error Message")
@@ -254,7 +254,7 @@ func Test_Store_Fatal(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.Fatal("fatal")
@@ -273,7 +273,7 @@ func Test_Store_FatalWithContext(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.FatalWithContext("fatal", "Fatal Message")
@@ -292,7 +292,7 @@ func Test_Store_Info(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.Info("Info")
@@ -311,7 +311,7 @@ func Test_Store_InfoWithContext(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.InfoWithContext("Info", "Info Message")
@@ -330,7 +330,7 @@ func Test_Store_Trace(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.Trace("trace")
@@ -349,7 +349,7 @@ func Test_Store_TraceWithContext(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.TraceWithContext("trace", "Trace Message")
@@ -368,7 +368,7 @@ func Test_Store_Warn(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.Warn("warn")
@@ -387,7 +387,7 @@ func Test_Store_WarnWithContext(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatalf("Store could not be created: " + err.Error())
+		t.Fatal("Store could not be created: " + err.Error())
 	}
 
 	err = s.WarnWithContext("warn", "Warning Message")
