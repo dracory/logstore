@@ -393,3 +393,64 @@ func Test_Store_WarnWithContext(t *testing.T) {
 		t.Fatal("Unexpected error: ", err.Error())
 	}
 }
+
+func Test_Store_GetDriverNameAndLogTableName(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:           db,
+		LogTableName: "log_getters",
+		DbDriverName: "sqlite3",
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	if s.GetDriverName() != "sqlite3" {
+		t.Fatal("GetDriverName returned unexpected value")
+	}
+
+	if s.GetLogTableName() != "log_getters" {
+		t.Fatal("GetLogTableName returned unexpected value")
+	}
+}
+
+func Test_Store_LogList(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_list",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	err = s.Debug("debug message")
+	if err != nil {
+		t.Fatal("Unexpected error: ", err.Error())
+	}
+
+	err = s.Error("error message")
+	if err != nil {
+		t.Fatal("Unexpected error: ", err.Error())
+	}
+
+	query := LogQuery().SetLevel(LevelDebug)
+	logs, err := s.LogList(query)
+	if err != nil {
+		t.Fatal("Unexpected error from LogList: ", err.Error())
+	}
+
+	if len(logs) != 1 {
+		t.Fatalf("Expected 1 log entry, got %d", len(logs))
+	}
+
+	if logs[0].Level != LevelDebug {
+		t.Fatal("LogList did not return the expected log level")
+	}
+}

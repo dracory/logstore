@@ -29,10 +29,3 @@ type Log struct {
 	Context string
 	Time    *time.Time
 }
-
-// BeforeCreate adds UID to model
-// func (l *Log) BeforeCreate(tx *gorm.DB) (err error) {
-// 	uuid := uid.HumanUid()
-// 	l.ID = uuid
-// 	return nil
-// }

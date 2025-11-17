@@ -25,6 +25,14 @@ type storeImplementation struct {
 	debugEnabled       bool
 }
 
+func (st *storeImplementation) GetDriverName() string {
+	return st.dbDriverName
+}
+
+func (st *storeImplementation) GetLogTableName() string {
+	return st.logTableName
+}
+
 // NewStoreOptions define the options for creating a new session store
 type NewStoreOptions struct {
 	LogTableName       string
@@ -316,4 +324,56 @@ func (st *storeImplementation) WarnWithContext(message string, context interface
 	}
 
 	return st.Log(&log)
+}
+
+func (st *storeImplementation) LogList(query LogQueryInterface) ([]Log, error) {
+	if query == nil {
+		query = LogQuery()
+	}
+
+	q, columns, err := query.ToSelectDataset(st)
+	if err != nil {
+		return []Log{}, err
+	}
+
+	sqlStr, sqlParams, errSql := q.Prepared(true).Select(columns...).ToSQL()
+	if errSql != nil {
+		return []Log{}, errSql
+	}
+
+	if st.debugEnabled {
+		log.Println(sqlStr)
+	}
+
+	db := sb.NewDatabase(st.db, st.dbDriverName)
+	modelMaps, err := db.SelectToMapString(sqlStr, sqlParams...)
+	if err != nil {
+		return []Log{}, err
+	}
+
+	list := []Log{}
+
+	for _, modelMap := range modelMaps {
+		logEntry := Log{}
+		if v, ok := modelMap[COLUMN_ID]; ok {
+			logEntry.ID = v
+		}
+		if v, ok := modelMap[COLUMN_LEVEL]; ok {
+			logEntry.Level = v
+		}
+		if v, ok := modelMap[COLUMN_MESSAGE]; ok {
+			logEntry.Message = v
+		}
+		if v, ok := modelMap[COLUMN_CONTEXT]; ok {
+			logEntry.Context = v
+		}
+		if v, ok := modelMap[COLUMN_TIME]; ok {
+			parsed := carbon.Parse(v).StdTime()
+			logEntry.Time = &parsed
+		}
+
+		list = append(list, logEntry)
+	}
+
+	return list, nil
 }

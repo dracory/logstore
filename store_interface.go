@@ -18,6 +18,9 @@ type StoreInterface interface {
 	// EnableDebug enables or disables debug mode
 	EnableDebug(debug bool)
 
+	GetDriverName() string
+	GetLogTableName() string
+
 	// Log adds a log entry
 	Log(logEntry *Log) error
 
@@ -62,4 +65,6 @@ type StoreInterface interface {
 
 	// WarnWithContext adds a warn log with context data
 	WarnWithContext(message string, context interface{}) error
+
+	LogList(query LogQueryInterface) ([]Log, error)
 }
