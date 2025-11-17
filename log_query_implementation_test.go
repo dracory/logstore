@@ -99,22 +99,34 @@ func Test_LogQueryImplementation_ToSelectDataset_MessageAndContextFilters(t *tes
 		t.Fatalf("unexpected error from ToSelectDataset: %v", err)
 	}
 
-	sql, _, err := selectDataset.Prepared(true).ToSQL()
+	sql, args, err := selectDataset.Prepared(true).ToSQL()
 	if err != nil {
 		t.Fatalf("unexpected error generating SQL: %v", err)
 	}
 
-	// Basic checks that our LIKE/NOT LIKE clauses are present
-	expected := []string{
-		"message", "LIKE", "%error%",
-		"message", "NOT LIKE", "%debug%",
-		"context", "LIKE", "%user%",
-		"context", "NOT LIKE", "%trace%",
+	// Basic checks that our LIKE/NOT LIKE clauses are present in the SQL
+	expectedSqlTerms := []string{
+		"message", "LIKE",
+		"message", "NOT LIKE",
+		"context", "LIKE",
+		"context", "NOT LIKE",
 	}
 
-	for _, term := range expected {
+	for _, term := range expectedSqlTerms {
 		if !strings.Contains(sql, term) {
 			t.Fatalf("expected SQL to contain %q, got: %s", term, sql)
+		}
+	}
+
+	// And the concrete LIKE values should be present in the prepared args
+	if len(args) != 4 {
+		t.Fatalf("expected 4 args, got %d (%v)", len(args), args)
+	}
+
+	expectedArgs := []string{"%error%", "%debug%", "%user%", "%trace%"}
+	for i, expected := range expectedArgs {
+		if args[i] != expected {
+			t.Fatalf("expected arg[%d] = %q, got %v", i, expected, args[i])
 		}
 	}
 }
