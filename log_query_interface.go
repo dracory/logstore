@@ -28,6 +28,22 @@ type LogQueryInterface interface {
 	GetLevelIn() []string
 	SetLevelIn(levels []string) LogQueryInterface
 
+	IsMessageContainsSet() bool
+	GetMessageContains() string
+	SetMessageContains(term string) LogQueryInterface
+
+	IsMessageNotContainsSet() bool
+	GetMessageNotContains() string
+	SetMessageNotContains(term string) LogQueryInterface
+
+	IsContextContainsSet() bool
+	GetContextContains() string
+	SetContextContains(term string) LogQueryInterface
+
+	IsContextNotContainsSet() bool
+	GetContextNotContains() string
+	SetContextNotContains(term string) LogQueryInterface
+
 	IsTimeGteSet() bool
 	GetTimeGte() string
 	SetTimeGte(time string) LogQueryInterface

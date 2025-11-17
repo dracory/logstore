@@ -150,16 +150,16 @@ func Test_Store_Log(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
-	time := time.Now()
-	log := Log{
-		ID:      uid.HumanUid(),
-		Level:   LevelDebug,
-		Message: "Test Message",
-		Context: "Test Context",
-		Time:    &time,
-	}
+	now := time.Now().UTC()
+	logEntry := NewLogWithData(
+		uid.HumanUid(),
+		LEVEL_DEBUG,
+		"Test Message",
+		"Test Context",
+		now,
+	)
 
-	err = s.Log(&log)
+	err = s.Log(logEntry)
 	if err != nil {
 		t.Fatal("Unexpected error: ", err.Error())
 	}
@@ -440,7 +440,7 @@ func Test_Store_LogList(t *testing.T) {
 		t.Fatal("Unexpected error: ", err.Error())
 	}
 
-	query := LogQuery().SetLevel(LevelDebug)
+	query := LogQuery().SetLevel(LEVEL_DEBUG)
 	logs, err := s.LogList(query)
 	if err != nil {
 		t.Fatal("Unexpected error from LogList: ", err.Error())
@@ -450,7 +450,130 @@ func Test_Store_LogList(t *testing.T) {
 		t.Fatalf("Expected 1 log entry, got %d", len(logs))
 	}
 
-	if logs[0].Level != LevelDebug {
+	if logs[0].GetLevel() != LEVEL_DEBUG {
 		t.Fatal("LogList did not return the expected log level")
+	}
+}
+
+func Test_Store_LogCreateAndFindByID(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_create_find",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	entry := NewLog().
+		SetLevel(LEVEL_INFO).
+		SetMessage("create and find test")
+
+	if err := s.LogCreate(entry); err != nil {
+		t.Fatal("Unexpected error from LogCreate: ", err.Error())
+	}
+
+	id := entry.GetID()
+	if id == "" {
+		t.Fatal("LogCreate did not assign an ID")
+	}
+
+	found, err := s.LogFindByID(id)
+	if err != nil {
+		t.Fatal("Unexpected error from LogFindByID: ", err.Error())
+	}
+
+	if found == nil {
+		t.Fatal("LogFindByID returned nil entry")
+	}
+
+	if found.GetID() != id {
+		t.Fatal("LogFindByID returned entry with unexpected ID")
+	}
+}
+
+func Test_Store_LogDelete(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_delete",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	entry := NewLog().
+		SetLevel(LEVEL_ERROR).
+		SetMessage("delete test")
+
+	if err := s.LogCreate(entry); err != nil {
+		t.Fatal("Unexpected error from LogCreate: ", err.Error())
+	}
+
+	id := entry.GetID()
+	if id == "" {
+		t.Fatal("LogCreate did not assign an ID")
+	}
+
+	if err := s.LogDelete(entry); err != nil {
+		t.Fatal("Unexpected error from LogDelete: ", err.Error())
+	}
+
+	found, err := s.LogFindByID(id)
+	if err != nil {
+		t.Fatal("Unexpected error from LogFindByID: ", err.Error())
+	}
+
+	if found != nil {
+		t.Fatal("LogDelete did not remove the entry")
+	}
+}
+
+func Test_Store_LogDeleteByID(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_delete_by_id",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	entry := NewLog().
+		SetLevel(LEVEL_WARNING).
+		SetMessage("delete by id test")
+
+	if err := s.LogCreate(entry); err != nil {
+		t.Fatal("Unexpected error from LogCreate: ", err.Error())
+	}
+
+	id := entry.GetID()
+	if id == "" {
+		t.Fatal("LogCreate did not assign an ID")
+	}
+
+	if err := s.LogDeleteByID(id); err != nil {
+		t.Fatal("Unexpected error from LogDeleteByID: ", err.Error())
+	}
+
+	found, err := s.LogFindByID(id)
+	if err != nil {
+		t.Fatal("Unexpected error from LogFindByID: ", err.Error())
+	}
+
+	if found != nil {
+		t.Fatal("LogDeleteByID did not remove the entry")
 	}
 }
