@@ -22,7 +22,7 @@ var _ LogInterface = (*logImplementation)(nil)
 func NewLog() LogInterface {
 	return &logImplementation{
 		id:      uid.MicroUid(),
-		level:   LevelInfo,
+		level:   LEVEL_INFO,
 		message: "",
 		context: "",
 		time:    time.Now().UTC(),
