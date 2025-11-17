@@ -2,7 +2,6 @@ package logstore
 
 import (
 	"database/sql"
-	"os"
 	"testing"
 	"time"
 
@@ -10,9 +9,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func InitDB(filepath string) *sql.DB {
-	os.Remove(filepath) // remove database
-	dsn := filepath + "?parseTime=true"
+func InitDB() *sql.DB {
+	dsn := ":memory:?parseTime=true"
 	db, err := sql.Open("sqlite3", dsn)
 
 	if err != nil {
@@ -23,7 +21,7 @@ func InitDB(filepath string) *sql.DB {
 }
 
 func TestStoreCreate(t *testing.T) {
-	db := InitDB("test_log_store_create.db")
+	db := InitDB()
 
 	store, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -41,7 +39,7 @@ func TestStoreCreate(t *testing.T) {
 }
 
 // func TestWithAutoMigrate(t *testing.T) {
-// 	db := InitDB("test_log_store_automigrate.db")
+// 	db := InitDB()
 
 // 	// Initializes automigrateEnabled to False
 // 	s := Store{
@@ -77,7 +75,7 @@ func TestStoreCreate(t *testing.T) {
 // }
 
 // func TestWithDb(t *testing.T) {
-// 	db := InitDB("test_log_store_with_automigrate.db")
+// 	db := InitDB()
 
 // 	s := Store{
 // 		logTableName:       "LogTable",
@@ -119,7 +117,7 @@ func TestStoreCreate(t *testing.T) {
 // }
 
 func Test_Store_AutoMigrate(t *testing.T) {
-	db := InitDB("test_log_store_automigrate.db")
+	db := InitDB()
 
 	// Initializes automigrateEnabled to False
 	s, err := NewStore(NewStoreOptions{
@@ -140,7 +138,7 @@ func Test_Store_AutoMigrate(t *testing.T) {
 }
 
 func Test_Store_Log(t *testing.T) {
-	db := InitDB("test_log_store_log.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -168,7 +166,7 @@ func Test_Store_Log(t *testing.T) {
 }
 
 func Test_Store_Debug(t *testing.T) {
-	db := InitDB("test_log_store_debug.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -187,7 +185,7 @@ func Test_Store_Debug(t *testing.T) {
 }
 
 func Test_Store_DebugWithContext(t *testing.T) {
-	db := InitDB("test_log_store_debug_with_cotext.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -206,7 +204,7 @@ func Test_Store_DebugWithContext(t *testing.T) {
 }
 
 func Test_Store_Error(t *testing.T) {
-	db := InitDB("test_log_store_log.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -225,7 +223,7 @@ func Test_Store_Error(t *testing.T) {
 }
 
 func Test_Store_ErrorWithContext(t *testing.T) {
-	db := InitDB("test_log_store_error_with_context.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -245,7 +243,7 @@ func Test_Store_ErrorWithContext(t *testing.T) {
 
 // Fatal methods uses system level API to terminate program (os.Exit)
 func Test_Store_Fatal(t *testing.T) {
-	db := InitDB("test_log_store_log.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -264,7 +262,7 @@ func Test_Store_Fatal(t *testing.T) {
 }
 
 func Test_Store_FatalWithContext(t *testing.T) {
-	db := InitDB("test_log_store_log.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -283,7 +281,7 @@ func Test_Store_FatalWithContext(t *testing.T) {
 }
 
 func Test_Store_Info(t *testing.T) {
-	db := InitDB("test_log_store_info.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -302,7 +300,7 @@ func Test_Store_Info(t *testing.T) {
 }
 
 func Test_Store_InfoWithContext(t *testing.T) {
-	db := InitDB("test_log_store_info_with_context.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -321,7 +319,7 @@ func Test_Store_InfoWithContext(t *testing.T) {
 }
 
 func Test_Store_Trace(t *testing.T) {
-	db := InitDB("test_log_store_trace.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -340,7 +338,7 @@ func Test_Store_Trace(t *testing.T) {
 }
 
 func Test_Store_TraceWithContext(t *testing.T) {
-	db := InitDB("test_log_store_trace_with_context.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -359,7 +357,7 @@ func Test_Store_TraceWithContext(t *testing.T) {
 }
 
 func Test_Store_Warn(t *testing.T) {
-	db := InitDB("test_log_store_warn.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
@@ -378,7 +376,7 @@ func Test_Store_Warn(t *testing.T) {
 }
 
 func Test_Store_WarnWithContext(t *testing.T) {
-	db := InitDB("test_log_store_warn_with_context.db")
+	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
