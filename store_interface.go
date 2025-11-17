@@ -23,7 +23,6 @@ type StoreInterface interface {
 
 	// Log adds a log entry
 	Log(logEntry LogInterface) error
-	LogCreate(logEntry LogInterface) error
 
 	// Debug adds a debug log
 	Debug(message string) error
@@ -67,6 +66,8 @@ type StoreInterface interface {
 	// WarnWithContext adds a warn log with context data
 	WarnWithContext(message string, context interface{}) error
 
+	LogCount(query LogQueryInterface) (int, error)
+	LogCreate(logEntry LogInterface) error
 	LogList(query LogQueryInterface) ([]LogInterface, error)
 	LogDelete(logEntry LogInterface) error
 	LogDeleteByID(id string) error

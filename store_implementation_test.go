@@ -38,6 +38,32 @@ func TestStoreCreate(t *testing.T) {
 	}
 }
 
+func TestNewStore_Error_LogTableNameRequired(t *testing.T) {
+	db := InitDB()
+
+	store, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "",
+		AutomigrateEnabled: true,
+	})
+
+	if err == nil {
+		t.Fatalf("expected error for empty LogTableName, got nil (store=%v)", store)
+	}
+}
+
+func TestNewStore_Error_DBRequired(t *testing.T) {
+	store, err := NewStore(NewStoreOptions{
+		DB:                 nil,
+		LogTableName:       "logs",
+		AutomigrateEnabled: true,
+	})
+
+	if err == nil {
+		t.Fatalf("expected error for nil DB, got nil (store=%v)", store)
+	}
+}
+
 // func TestWithAutoMigrate(t *testing.T) {
 // 	db := InitDB()
 
@@ -575,5 +601,197 @@ func Test_Store_LogDeleteByID(t *testing.T) {
 
 	if found != nil {
 		t.Fatal("LogDeleteByID did not remove the entry")
+	}
+}
+
+func Test_Store_LogDeleteByID_Error_EmptyID(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_delete_by_id_error",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	if err := s.LogDeleteByID(""); err == nil {
+		t.Fatal("expected error from LogDeleteByID(\"\"), got nil")
+	}
+}
+
+func Test_Store_LogCount_Basic(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_count_basic",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	// create two debug logs and one error log
+	if err := s.Debug("debug 1"); err != nil {
+		t.Fatalf("unexpected error creating debug log: %v", err)
+	}
+	if err := s.Debug("debug 2"); err != nil {
+		t.Fatalf("unexpected error creating debug log: %v", err)
+	}
+	if err := s.Error("error 1"); err != nil {
+		t.Fatalf("unexpected error creating error log: %v", err)
+	}
+
+	// count all logs
+	countAll, err := s.LogCount(LogQuery())
+	if err != nil {
+		t.Fatalf("unexpected error from LogCount (all): %v", err)
+	}
+	if countAll != 3 {
+		t.Fatalf("expected 3 logs in total, got %d", countAll)
+	}
+
+	// count only debug logs
+	countDebug, err := s.LogCount(LogQuery().SetLevel(LEVEL_DEBUG))
+	if err != nil {
+		t.Fatalf("unexpected error from LogCount (debug): %v", err)
+	}
+	if countDebug != 2 {
+		t.Fatalf("expected 2 debug logs, got %d", countDebug)
+	}
+}
+
+func Test_Store_LogCount_IgnoresLimitAndOffset(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_count_paging",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	// create several logs
+	for i := 0; i < 5; i++ {
+		if err := s.Info("info log"); err != nil {
+			t.Fatalf("unexpected error creating info log: %v", err)
+		}
+	}
+
+	// apply limit/offset on the query; LogCount should still return total
+	query := LogQuery().
+		SetLevel(LEVEL_INFO).
+		SetLimit(2).
+		SetOffset(1)
+
+	count, err := s.LogCount(query)
+	if err != nil {
+		t.Fatalf("unexpected error from LogCount with paging: %v", err)
+	}
+	if count != 5 {
+		t.Fatalf("expected LogCount to ignore limit/offset and return 5, got %d", count)
+	}
+}
+
+func Test_Store_LogFindByID_Error_EmptyID(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_find_by_id_error",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	if _, err := s.LogFindByID(""); err == nil {
+		t.Fatal("expected error from LogFindByID(\"\"), got nil")
+	}
+}
+
+func Test_Store_LogCount_Error_FromInvalidQuery(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_count_error",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	query := LogQuery().SetLimit(-1)
+	if _, err := s.LogCount(query); err == nil {
+		t.Fatal("expected error from LogCount with invalid query (negative limit), got nil")
+	}
+}
+
+func Test_Store_LogList_NoMatches(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_list_no_matches",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	if err := s.Info("info only"); err != nil {
+		t.Fatalf("unexpected error creating info log: %v", err)
+	}
+
+	logs, err := s.LogList(LogQuery().SetLevel(LEVEL_ERROR))
+	if err != nil {
+		t.Fatalf("unexpected error from LogList with no matches: %v", err)
+	}
+	if len(logs) != 0 {
+		t.Fatalf("expected 0 logs for non-matching query, got %d", len(logs))
+	}
+}
+
+func Test_Store_LogCount_NoMatches(t *testing.T) {
+	db := InitDB()
+
+	s, err := NewStore(NewStoreOptions{
+		DB:                 db,
+		LogTableName:       "log_count_no_matches",
+		DbDriverName:       "sqlite3",
+		AutomigrateEnabled: true,
+	})
+
+	if err != nil {
+		t.Fatal("Store could not be created: " + err.Error())
+	}
+
+	if err := s.Info("info only"); err != nil {
+		t.Fatalf("unexpected error creating info log: %v", err)
+	}
+
+	count, err := s.LogCount(LogQuery().SetLevel(LEVEL_ERROR))
+	if err != nil {
+		t.Fatalf("unexpected error from LogCount with no matches: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("expected LogCount to return 0 for non-matching query, got %d", count)
 	}
 }

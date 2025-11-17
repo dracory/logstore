@@ -441,3 +441,40 @@ func (st *storeImplementation) LogList(query LogQueryInterface) ([]LogInterface,
 
 	return list, nil
 }
+
+// LogCount returns the total number of logs that match the given query,
+// ignoring any limit, offset, or ordering applied to the query.
+func (st *storeImplementation) LogCount(query LogQueryInterface) (int, error) {
+	if query == nil {
+		query = LogQuery()
+	}
+
+	selectDataset, _, err := query.ToSelectDataset(st)
+	if err != nil {
+		return 0, err
+	}
+
+	// Clear paging and ordering so we count all matching rows
+	countDataset := selectDataset.
+		ClearLimit().
+		ClearOffset().
+		ClearOrder().
+		Select(goqu.COUNT(goqu.Star()))
+
+	sqlStr, sqlParams, err := countDataset.Prepared(true).ToSQL()
+	if err != nil {
+		return 0, err
+	}
+
+	if st.debugEnabled {
+		log.Println(sqlStr)
+	}
+
+	row := st.db.QueryRow(sqlStr, sqlParams...)
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

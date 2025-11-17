@@ -85,6 +85,10 @@ func (s *logQueryTestStore) LogDelete(logEntry LogInterface) error       { retur
 func (s *logQueryTestStore) LogDeleteByID(id string) error               { return nil }
 func (s *logQueryTestStore) LogFindByID(id string) (LogInterface, error) { return nil, nil }
 
+func (s *logQueryTestStore) LogCount(query LogQueryInterface) (int, error) {
+	return 0, nil
+}
+
 func Test_LogQueryImplementation_ToSelectDataset_MessageAndContextFilters(t *testing.T) {
 	st := &logQueryTestStore{}
 
