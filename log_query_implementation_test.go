@@ -1,6 +1,7 @@
 package logstore
 
 import (
+	"context"
 	"strings"
 	"testing"
 )
@@ -46,13 +47,15 @@ func Test_LogQueryImplementation_Validate_MessageAndContextTerms(t *testing.T) {
 
 type logQueryTestStore struct{}
 
-func (s *logQueryTestStore) AutoMigrate() error                    { return nil }
-func (s *logQueryTestStore) EnableDebug(debug bool)                {}
-func (s *logQueryTestStore) GetDriverName() string                 { return "sqlite3" }
-func (s *logQueryTestStore) GetLogTableName() string               { return "logs" }
-func (s *logQueryTestStore) Log(logEntry LogInterface) error       { return nil }
-func (s *logQueryTestStore) LogCreate(logEntry LogInterface) error { return nil }
-func (s *logQueryTestStore) Debug(message string) error            { return nil }
+func (s *logQueryTestStore) AutoMigrate() error              { return nil }
+func (s *logQueryTestStore) EnableDebug(debug bool)          {}
+func (s *logQueryTestStore) GetDriverName() string           { return "sqlite3" }
+func (s *logQueryTestStore) GetLogTableName() string         { return "logs" }
+func (s *logQueryTestStore) Log(logEntry LogInterface) error { return nil }
+func (s *logQueryTestStore) LogCreate(ctx context.Context, logEntry LogInterface) error {
+	return nil
+}
+func (s *logQueryTestStore) Debug(message string) error { return nil }
 func (s *logQueryTestStore) DebugWithContext(message string, context interface{}) error {
 	return nil
 }
@@ -78,14 +81,16 @@ func (s *logQueryTestStore) Warn(message string) error { return nil }
 func (s *logQueryTestStore) WarnWithContext(message string, context interface{}) error {
 	return nil
 }
-func (s *logQueryTestStore) LogList(query LogQueryInterface) ([]LogInterface, error) {
+func (s *logQueryTestStore) LogList(ctx context.Context, query LogQueryInterface) ([]LogInterface, error) {
 	return nil, nil
 }
-func (s *logQueryTestStore) LogDelete(logEntry LogInterface) error       { return nil }
-func (s *logQueryTestStore) LogDeleteByID(id string) error               { return nil }
-func (s *logQueryTestStore) LogFindByID(id string) (LogInterface, error) { return nil, nil }
+func (s *logQueryTestStore) LogDelete(ctx context.Context, logEntry LogInterface) error { return nil }
+func (s *logQueryTestStore) LogDeleteByID(ctx context.Context, id string) error         { return nil }
+func (s *logQueryTestStore) LogFindByID(ctx context.Context, id string) (LogInterface, error) {
+	return nil, nil
+}
 
-func (s *logQueryTestStore) LogCount(query LogQueryInterface) (int, error) {
+func (s *logQueryTestStore) LogCount(ctx context.Context, query LogQueryInterface) (int, error) {
 	return 0, nil
 }
 

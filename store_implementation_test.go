@@ -1,6 +1,7 @@
 package logstore
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 	"time"
@@ -467,7 +468,8 @@ func Test_Store_LogList(t *testing.T) {
 	}
 
 	query := LogQuery().SetLevel(LEVEL_DEBUG)
-	logs, err := s.LogList(query)
+	ctx := context.Background()
+	logs, err := s.LogList(ctx, query)
 	if err != nil {
 		t.Fatal("Unexpected error from LogList: ", err.Error())
 	}
@@ -495,11 +497,13 @@ func Test_Store_LogCreateAndFindByID(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
+
 	entry := NewLog().
 		SetLevel(LEVEL_INFO).
 		SetMessage("create and find test")
 
-	if err := s.LogCreate(entry); err != nil {
+	if err := s.LogCreate(ctx, entry); err != nil {
 		t.Fatal("Unexpected error from LogCreate: ", err.Error())
 	}
 
@@ -508,7 +512,7 @@ func Test_Store_LogCreateAndFindByID(t *testing.T) {
 		t.Fatal("LogCreate did not assign an ID")
 	}
 
-	found, err := s.LogFindByID(id)
+	found, err := s.LogFindByID(ctx, id)
 	if err != nil {
 		t.Fatal("Unexpected error from LogFindByID: ", err.Error())
 	}
@@ -536,11 +540,13 @@ func Test_Store_LogDelete(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
+
 	entry := NewLog().
 		SetLevel(LEVEL_ERROR).
 		SetMessage("delete test")
 
-	if err := s.LogCreate(entry); err != nil {
+	if err := s.LogCreate(ctx, entry); err != nil {
 		t.Fatal("Unexpected error from LogCreate: ", err.Error())
 	}
 
@@ -549,11 +555,11 @@ func Test_Store_LogDelete(t *testing.T) {
 		t.Fatal("LogCreate did not assign an ID")
 	}
 
-	if err := s.LogDelete(entry); err != nil {
+	if err := s.LogDelete(ctx, entry); err != nil {
 		t.Fatal("Unexpected error from LogDelete: ", err.Error())
 	}
 
-	found, err := s.LogFindByID(id)
+	found, err := s.LogFindByID(ctx, id)
 	if err != nil {
 		t.Fatal("Unexpected error from LogFindByID: ", err.Error())
 	}
@@ -577,11 +583,13 @@ func Test_Store_LogDeleteByID(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
+
 	entry := NewLog().
 		SetLevel(LEVEL_WARNING).
 		SetMessage("delete by id test")
 
-	if err := s.LogCreate(entry); err != nil {
+	if err := s.LogCreate(ctx, entry); err != nil {
 		t.Fatal("Unexpected error from LogCreate: ", err.Error())
 	}
 
@@ -590,11 +598,11 @@ func Test_Store_LogDeleteByID(t *testing.T) {
 		t.Fatal("LogCreate did not assign an ID")
 	}
 
-	if err := s.LogDeleteByID(id); err != nil {
+	if err := s.LogDeleteByID(ctx, id); err != nil {
 		t.Fatal("Unexpected error from LogDeleteByID: ", err.Error())
 	}
 
-	found, err := s.LogFindByID(id)
+	found, err := s.LogFindByID(ctx, id)
 	if err != nil {
 		t.Fatal("Unexpected error from LogFindByID: ", err.Error())
 	}
@@ -618,7 +626,8 @@ func Test_Store_LogDeleteByID_Error_EmptyID(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
-	if err := s.LogDeleteByID(""); err == nil {
+	ctx := context.Background()
+	if err := s.LogDeleteByID(ctx, ""); err == nil {
 		t.Fatal("expected error from LogDeleteByID(\"\"), got nil")
 	}
 }
@@ -637,6 +646,8 @@ func Test_Store_LogCount_Basic(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
+
 	// create two debug logs and one error log
 	if err := s.Debug("debug 1"); err != nil {
 		t.Fatalf("unexpected error creating debug log: %v", err)
@@ -649,7 +660,7 @@ func Test_Store_LogCount_Basic(t *testing.T) {
 	}
 
 	// count all logs
-	countAll, err := s.LogCount(LogQuery())
+	countAll, err := s.LogCount(ctx, LogQuery())
 	if err != nil {
 		t.Fatalf("unexpected error from LogCount (all): %v", err)
 	}
@@ -658,7 +669,7 @@ func Test_Store_LogCount_Basic(t *testing.T) {
 	}
 
 	// count only debug logs
-	countDebug, err := s.LogCount(LogQuery().SetLevel(LEVEL_DEBUG))
+	countDebug, err := s.LogCount(ctx, LogQuery().SetLevel(LEVEL_DEBUG))
 	if err != nil {
 		t.Fatalf("unexpected error from LogCount (debug): %v", err)
 	}
@@ -681,6 +692,8 @@ func Test_Store_LogCount_IgnoresLimitAndOffset(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
+
 	// create several logs
 	for i := 0; i < 5; i++ {
 		if err := s.Info("info log"); err != nil {
@@ -694,7 +707,7 @@ func Test_Store_LogCount_IgnoresLimitAndOffset(t *testing.T) {
 		SetLimit(2).
 		SetOffset(1)
 
-	count, err := s.LogCount(query)
+	count, err := s.LogCount(ctx, query)
 	if err != nil {
 		t.Fatalf("unexpected error from LogCount with paging: %v", err)
 	}
@@ -717,7 +730,8 @@ func Test_Store_LogFindByID_Error_EmptyID(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
-	if _, err := s.LogFindByID(""); err == nil {
+	ctx := context.Background()
+	if _, err := s.LogFindByID(ctx, ""); err == nil {
 		t.Fatal("expected error from LogFindByID(\"\"), got nil")
 	}
 }
@@ -736,8 +750,9 @@ func Test_Store_LogCount_Error_FromInvalidQuery(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
 	query := LogQuery().SetLimit(-1)
-	if _, err := s.LogCount(query); err == nil {
+	if _, err := s.LogCount(ctx, query); err == nil {
 		t.Fatal("expected error from LogCount with invalid query (negative limit), got nil")
 	}
 }
@@ -756,11 +771,12 @@ func Test_Store_LogList_NoMatches(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
 	if err := s.Info("info only"); err != nil {
 		t.Fatalf("unexpected error creating info log: %v", err)
 	}
 
-	logs, err := s.LogList(LogQuery().SetLevel(LEVEL_ERROR))
+	logs, err := s.LogList(ctx, LogQuery().SetLevel(LEVEL_ERROR))
 	if err != nil {
 		t.Fatalf("unexpected error from LogList with no matches: %v", err)
 	}
@@ -783,11 +799,12 @@ func Test_Store_LogCount_NoMatches(t *testing.T) {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
+	ctx := context.Background()
 	if err := s.Info("info only"); err != nil {
 		t.Fatalf("unexpected error creating info log: %v", err)
 	}
 
-	count, err := s.LogCount(LogQuery().SetLevel(LEVEL_ERROR))
+	count, err := s.LogCount(ctx, LogQuery().SetLevel(LEVEL_ERROR))
 	if err != nil {
 		t.Fatalf("unexpected error from LogCount with no matches: %v", err)
 	}

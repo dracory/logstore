@@ -1,6 +1,7 @@
 package logstore
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlserver"
+	"github.com/dracory/database"
 	"github.com/dracory/sb"
 	"github.com/dracory/uid"
 	"github.com/dromara/carbon/v2"
@@ -101,7 +103,7 @@ func (st *storeImplementation) Log(logEntry LogInterface) error {
 		return errors.New("log entry is nil")
 	}
 
-	return st.LogCreate(logEntry)
+	return st.LogCreate(context.Background(), logEntry)
 }
 
 // Debug adds a debug log
@@ -287,7 +289,7 @@ func (st *storeImplementation) WarnWithContext(message string, context interface
 }
 
 // LogCreate adds a log
-func (st *storeImplementation) LogCreate(logEntry LogInterface) error {
+func (st *storeImplementation) LogCreate(ctx context.Context, logEntry LogInterface) error {
 	if logEntry == nil {
 		return errors.New("log entry is nil")
 	}
@@ -330,7 +332,7 @@ func (st *storeImplementation) LogCreate(logEntry LogInterface) error {
 		log.Println(sqlStr)
 	}
 
-	_, err = st.db.Exec(sqlStr, sqlParams...)
+	_, err = st.db.ExecContext(ctx, sqlStr, sqlParams...)
 
 	if err != nil {
 		if st.debugEnabled {
@@ -343,16 +345,16 @@ func (st *storeImplementation) LogCreate(logEntry LogInterface) error {
 }
 
 // LogDelete deletes a log
-func (st *storeImplementation) LogDelete(logEntry LogInterface) error {
+func (st *storeImplementation) LogDelete(ctx context.Context, logEntry LogInterface) error {
 	if logEntry == nil {
 		return errors.New("log entry is nil")
 	}
 
-	return st.LogDeleteByID(logEntry.GetID())
+	return st.LogDeleteByID(ctx, logEntry.GetID())
 }
 
 // LogDeleteByID deletes a log by ID
-func (st *storeImplementation) LogDeleteByID(id string) error {
+func (st *storeImplementation) LogDeleteByID(ctx context.Context, id string) error {
 	if id == "" {
 		return errors.New("log id is empty")
 	}
@@ -371,18 +373,18 @@ func (st *storeImplementation) LogDeleteByID(id string) error {
 		log.Println(sqlStr)
 	}
 
-	_, err := st.db.Exec(sqlStr, params...)
+	_, err := st.db.ExecContext(ctx, sqlStr, params...)
 
 	return err
 }
 
 // LogFindByID finds a log by ID
-func (st *storeImplementation) LogFindByID(id string) (LogInterface, error) {
+func (st *storeImplementation) LogFindByID(ctx context.Context, id string) (LogInterface, error) {
 	if id == "" {
 		return nil, errors.New("log id is empty")
 	}
 
-	list, err := st.LogList(LogQuery().
+	list, err := st.LogList(ctx, LogQuery().
 		SetID(id).
 		SetLimit(1))
 
@@ -397,7 +399,7 @@ func (st *storeImplementation) LogFindByID(id string) (LogInterface, error) {
 	return nil, nil
 }
 
-func (st *storeImplementation) LogList(query LogQueryInterface) ([]LogInterface, error) {
+func (st *storeImplementation) LogList(ctx context.Context, query LogQueryInterface) ([]LogInterface, error) {
 	if query == nil {
 		query = LogQuery()
 	}
@@ -416,8 +418,7 @@ func (st *storeImplementation) LogList(query LogQueryInterface) ([]LogInterface,
 		log.Println(sqlStr)
 	}
 
-	db := sb.NewDatabase(st.db, st.dbDriverName)
-	modelMaps, err := db.SelectToMapString(sqlStr, sqlParams...)
+	modelMaps, err := database.SelectToMapString(database.NewQueryableContext(ctx, st.db), sqlStr, sqlParams...)
 	if err != nil {
 		return []LogInterface{}, err
 	}
@@ -444,7 +445,7 @@ func (st *storeImplementation) LogList(query LogQueryInterface) ([]LogInterface,
 
 // LogCount returns the total number of logs that match the given query,
 // ignoring any limit, offset, or ordering applied to the query.
-func (st *storeImplementation) LogCount(query LogQueryInterface) (int, error) {
+func (st *storeImplementation) LogCount(ctx context.Context, query LogQueryInterface) (int, error) {
 	if query == nil {
 		query = LogQuery()
 	}
@@ -470,7 +471,7 @@ func (st *storeImplementation) LogCount(query LogQueryInterface) (int, error) {
 		log.Println(sqlStr)
 	}
 
-	row := st.db.QueryRow(sqlStr, sqlParams...)
+	row := st.db.QueryRowContext(ctx, sqlStr, sqlParams...)
 	var count int
 	if err := row.Scan(&count); err != nil {
 		return 0, err

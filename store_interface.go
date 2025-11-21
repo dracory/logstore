@@ -1,6 +1,7 @@
 package logstore
 
 import (
+	"context"
 	"errors"
 )
 
@@ -66,10 +67,10 @@ type StoreInterface interface {
 	// WarnWithContext adds a warn log with context data
 	WarnWithContext(message string, context interface{}) error
 
-	LogCount(query LogQueryInterface) (int, error)
-	LogCreate(logEntry LogInterface) error
-	LogList(query LogQueryInterface) ([]LogInterface, error)
-	LogDelete(logEntry LogInterface) error
-	LogDeleteByID(id string) error
-	LogFindByID(id string) (LogInterface, error)
+	LogCount(ctx context.Context, query LogQueryInterface) (int, error)
+	LogCreate(ctx context.Context, logEntry LogInterface) error
+	LogList(ctx context.Context, query LogQueryInterface) ([]LogInterface, error)
+	LogDelete(ctx context.Context, logEntry LogInterface) error
+	LogDeleteByID(ctx context.Context, id string) error
+	LogFindByID(ctx context.Context, id string) (LogInterface, error)
 }
