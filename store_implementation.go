@@ -11,7 +11,6 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlserver"
 	"github.com/dracory/database"
 	"github.com/dracory/sb"
@@ -76,13 +75,16 @@ func NewStore(opts NewStoreOptions) (*storeImplementation, error) {
 
 // AutoMigrate auto migrate
 func (st *storeImplementation) AutoMigrate() error {
-	sql := st.SqlCreateTable()
+	sql, err := st.SqlCreateTable()
+	if err != nil {
+		return err
+	}
 
 	if st.debugEnabled {
 		log.Println(sql)
 	}
 
-	_, err := st.db.Exec(sql)
+	_, err = st.db.Exec(sql)
 
 	if err != nil {
 		log.Println(err)

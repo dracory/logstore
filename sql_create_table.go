@@ -3,8 +3,8 @@ package logstore
 import "github.com/dracory/sb"
 
 // SqlCreateTable returns a SQL string for creating the setting table
-func (store *storeImplementation) SqlCreateTable() string {
-	sql := sb.NewBuilder(sb.DatabaseDriverName(store.db)).
+func (store *storeImplementation) SqlCreateTable() (string, error) {
+	sql, err := sb.NewBuilder(sb.DatabaseDriverName(store.db)).
 		Table(store.logTableName).
 		Column(sb.Column{
 			Name:       COLUMN_ID,
@@ -32,5 +32,5 @@ func (store *storeImplementation) SqlCreateTable() string {
 		}).
 		CreateIfNotExists()
 
-	return sql
+	return sql, err
 }

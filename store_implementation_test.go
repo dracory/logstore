@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/dracory/uid"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 func InitDB() *sql.DB {
 	dsn := ":memory:?parseTime=true"
-	db, err := sql.Open("sqlite3", dsn)
+	db, err := sql.Open("sqlite", dsn)
 
 	if err != nil {
 		panic(err)
@@ -427,14 +427,14 @@ func Test_Store_GetDriverNameAndLogTableName(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:           db,
 		LogTableName: "log_getters",
-		DbDriverName: "sqlite3",
+		DbDriverName: "sqlite",
 	})
 
 	if err != nil {
 		t.Fatal("Store could not be created: " + err.Error())
 	}
 
-	if s.GetDriverName() != "sqlite3" {
+	if s.GetDriverName() != "sqlite" {
 		t.Fatal("GetDriverName returned unexpected value")
 	}
 

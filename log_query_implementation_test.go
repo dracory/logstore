@@ -49,7 +49,7 @@ type logQueryTestStore struct{}
 
 func (s *logQueryTestStore) AutoMigrate() error              { return nil }
 func (s *logQueryTestStore) EnableDebug(debug bool)          {}
-func (s *logQueryTestStore) GetDriverName() string           { return "sqlite3" }
+func (s *logQueryTestStore) GetDriverName() string           { return "sqlite" }
 func (s *logQueryTestStore) GetLogTableName() string         { return "logs" }
 func (s *logQueryTestStore) Log(logEntry LogInterface) error { return nil }
 func (s *logQueryTestStore) LogCreate(ctx context.Context, logEntry LogInterface) error {
