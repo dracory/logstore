@@ -67,4 +67,8 @@ type LogQueryInterface interface {
 	IsOrderDirectionSet() bool
 	GetOrderDirection() string
 	SetOrderDirection(orderDirection string) LogQueryInterface
+
+	IsColumnsSet() bool
+	GetColumns() []string
+	SetColumns(columns []string) LogQueryInterface
 }

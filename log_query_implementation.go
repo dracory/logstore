@@ -49,6 +49,9 @@ type logQueryImplementation struct {
 
 	isOrderBySet bool
 	orderBy      string
+
+	isColumnsSet bool
+	columns      []string
 }
 
 var _ LogQueryInterface = (*logQueryImplementation)(nil)
@@ -188,7 +191,15 @@ func (q *logQueryImplementation) ToSelectDataset(st StoreInterface) (selectDatas
 		}
 	}
 
-	return sql, []any{}, nil
+	// Build columns slice
+	selectColumns := []any{}
+	if q.IsColumnsSet() {
+		for _, col := range q.GetColumns() {
+			selectColumns = append(selectColumns, col)
+		}
+	}
+
+	return sql, selectColumns, nil
 }
 
 // ============================================================================
