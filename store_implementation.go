@@ -380,6 +380,31 @@ func (st *storeImplementation) LogDeleteByID(ctx context.Context, id string) err
 	return err
 }
 
+// LogDeleteByIDs deletes multiple logs by their IDs in a single query
+func (st *storeImplementation) LogDeleteByIDs(ctx context.Context, ids []string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	sqlStr, params, errSql := goqu.Dialect(st.dbDriverName).
+		Delete(st.logTableName).
+		Prepared(true).
+		Where(goqu.C(COLUMN_ID).In(ids)).
+		ToSQL()
+
+	if errSql != nil {
+		return errSql
+	}
+
+	if st.debugEnabled {
+		log.Println(sqlStr)
+	}
+
+	_, err := st.db.ExecContext(ctx, sqlStr, params...)
+
+	return err
+}
+
 // LogFindByID finds a log by ID
 func (st *storeImplementation) LogFindByID(ctx context.Context, id string) (LogInterface, error) {
 	if id == "" {

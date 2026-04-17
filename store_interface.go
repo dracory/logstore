@@ -72,5 +72,6 @@ type StoreInterface interface {
 	LogList(ctx context.Context, query LogQueryInterface) ([]LogInterface, error)
 	LogDelete(ctx context.Context, logEntry LogInterface) error
 	LogDeleteByID(ctx context.Context, id string) error
+	LogDeleteByIDs(ctx context.Context, ids []string) error
 	LogFindByID(ctx context.Context, id string) (LogInterface, error)
 }

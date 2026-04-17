@@ -86,6 +86,7 @@ func (s *logQueryTestStore) LogList(ctx context.Context, query LogQueryInterface
 }
 func (s *logQueryTestStore) LogDelete(ctx context.Context, logEntry LogInterface) error { return nil }
 func (s *logQueryTestStore) LogDeleteByID(ctx context.Context, id string) error         { return nil }
+func (s *logQueryTestStore) LogDeleteByIDs(ctx context.Context, ids []string) error     { return nil }
 func (s *logQueryTestStore) LogFindByID(ctx context.Context, id string) (LogInterface, error) {
 	return nil, nil
 }
