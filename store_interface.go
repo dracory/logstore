@@ -23,10 +23,10 @@ type StoreInterface interface {
 	SetLogTableName(logTableName string)
 
 	// MigrateDown drops the log table
-	MigrateDown(tx ...*sql.Tx) error
+	MigrateDown(ctx context.Context, tx ...*sql.Tx) error
 
 	// MigrateUp creates the log table
-	MigrateUp(tx ...*sql.Tx) error
+	MigrateUp(ctx context.Context, tx ...*sql.Tx) error
 
 	// EnableDebug enables or disables debug mode
 	EnableDebug(debug bool)

@@ -48,13 +48,13 @@ func Test_LogQueryImplementation_Validate_MessageAndContextTerms(t *testing.T) {
 
 type logQueryTestStore struct{}
 
-func (s *logQueryTestStore) SetLogTableName(logTableName string) {}
-func (s *logQueryTestStore) MigrateDown(tx ...*sql.Tx) error     { return nil }
-func (s *logQueryTestStore) MigrateUp(tx ...*sql.Tx) error       { return nil }
-func (s *logQueryTestStore) EnableDebug(debug bool)              {}
-func (s *logQueryTestStore) GetDriverName() string               { return "sqlite" }
-func (s *logQueryTestStore) GetLogTableName() string             { return "logs" }
-func (s *logQueryTestStore) Log(logEntry LogInterface) error     { return nil }
+func (s *logQueryTestStore) SetLogTableName(logTableName string)                  {}
+func (s *logQueryTestStore) MigrateDown(ctx context.Context, tx ...*sql.Tx) error { return nil }
+func (s *logQueryTestStore) MigrateUp(ctx context.Context, tx ...*sql.Tx) error   { return nil }
+func (s *logQueryTestStore) EnableDebug(debug bool)                               {}
+func (s *logQueryTestStore) GetDriverName() string                                { return "sqlite" }
+func (s *logQueryTestStore) GetLogTableName() string                              { return "logs" }
+func (s *logQueryTestStore) Log(logEntry LogInterface) error                      { return nil }
 func (s *logQueryTestStore) LogCreate(ctx context.Context, logEntry LogInterface) error {
 	return nil
 }
