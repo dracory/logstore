@@ -2,6 +2,7 @@ package logstore
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 )
 
@@ -13,14 +14,22 @@ var (
 
 // StoreInterface defines the interface for a log store
 type StoreInterface interface {
-	// AutoMigrate creates the necessary database tables
-	AutoMigrate() error
+	// GetDriverName returns the database driver name
+	GetDriverName() string
+
+	// GetLogTableName returns the log table name
+	GetLogTableName() string
+	// SetLogTableName sets the log table name
+	SetLogTableName(logTableName string)
+
+	// MigrateDown drops the log table
+	MigrateDown(tx ...*sql.Tx) error
+
+	// MigrateUp creates the log table
+	MigrateUp(tx ...*sql.Tx) error
 
 	// EnableDebug enables or disables debug mode
 	EnableDebug(debug bool)
-
-	GetDriverName() string
-	GetLogTableName() string
 
 	// Log adds a log entry
 	Log(logEntry LogInterface) error

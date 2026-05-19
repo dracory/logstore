@@ -35,6 +35,11 @@ func (st *storeImplementation) GetLogTableName() string {
 	return st.logTableName
 }
 
+// SetLogTableName sets the log table name
+func (st *storeImplementation) SetLogTableName(logTableName string) {
+	st.logTableName = logTableName
+}
+
 // NewStoreOptions define the options for creating a new session store
 type NewStoreOptions struct {
 	LogTableName       string
@@ -67,15 +72,20 @@ func NewStore(opts NewStoreOptions) (*storeImplementation, error) {
 	}
 
 	if store.automigrateEnabled {
-		store.AutoMigrate()
+		store.MigrateUp()
 	}
 
 	return store, nil
 }
 
-// AutoMigrate auto migrate
-func (st *storeImplementation) AutoMigrate() error {
-	sql, err := st.SqlCreateTable()
+// MigrateUp creates the log table
+func (st *storeImplementation) MigrateUp(tx ...*sql.Tx) error {
+	var txToUse *sql.Tx
+	if len(tx) > 0 {
+		txToUse = tx[0]
+	}
+
+	sql, err := st.sqlCreateTable()
 	if err != nil {
 		return err
 	}
@@ -84,14 +94,55 @@ func (st *storeImplementation) AutoMigrate() error {
 		log.Println(sql)
 	}
 
-	_, err = st.db.Exec(sql)
+	var errExec error
+	if txToUse != nil {
+		_, errExec = txToUse.Exec(sql)
+	} else {
+		_, errExec = st.db.Exec(sql)
+	}
 
-	if err != nil {
-		log.Println(err)
-		return err
+	if errExec != nil {
+		log.Println(errExec)
+		return errExec
 	}
 
 	return nil
+}
+
+// MigrateDown drops the log table
+func (st *storeImplementation) MigrateDown(tx ...*sql.Tx) error {
+	var txToUse *sql.Tx
+	if len(tx) > 0 {
+		txToUse = tx[0]
+	}
+
+	sql, err := st.sqlDropTable()
+	if err != nil {
+		return err
+	}
+
+	if st.debugEnabled {
+		log.Println(sql)
+	}
+
+	var errExec error
+	if txToUse != nil {
+		_, errExec = txToUse.Exec(sql)
+	} else {
+		_, errExec = st.db.Exec(sql)
+	}
+
+	if errExec != nil {
+		log.Println(errExec)
+		return errExec
+	}
+
+	return nil
+}
+
+// AutoMigrate auto migrate (deprecated - use MigrateUp)
+func (st *storeImplementation) AutoMigrate() error {
+	return st.MigrateUp()
 }
 
 // EnableDebug - enables the debug option

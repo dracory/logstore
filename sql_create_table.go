@@ -2,8 +2,8 @@ package logstore
 
 import "github.com/dracory/sb"
 
-// SqlCreateTable returns a SQL string for creating the setting table
-func (store *storeImplementation) SqlCreateTable() (string, error) {
+// sqlCreateTable returns a SQL string for creating the setting table
+func (store *storeImplementation) sqlCreateTable() (string, error) {
 	sql, err := sb.NewBuilder(sb.DatabaseDriverName(store.db)).
 		Table(store.logTableName).
 		Column(sb.Column{
@@ -15,16 +15,15 @@ func (store *storeImplementation) SqlCreateTable() (string, error) {
 		Column(sb.Column{
 			Name:   COLUMN_LEVEL,
 			Type:   sb.COLUMN_TYPE_STRING,
-			Length: 40,
+			Length: 20,
 		}).
 		Column(sb.Column{
-			Name:   COLUMN_MESSAGE,
-			Type:   sb.COLUMN_TYPE_STRING,
-			Length: 510,
+			Name: COLUMN_MESSAGE,
+			Type: sb.COLUMN_TYPE_TEXT,
 		}).
 		Column(sb.Column{
 			Name: COLUMN_CONTEXT,
-			Type: sb.COLUMN_TYPE_LONGTEXT,
+			Type: sb.COLUMN_TYPE_TEXT,
 		}).
 		Column(sb.Column{
 			Name: COLUMN_TIME,
@@ -32,5 +31,13 @@ func (store *storeImplementation) SqlCreateTable() (string, error) {
 		}).
 		CreateIfNotExists()
 
+	return sql, err
+}
+
+// sqlDropTable returns a SQL string for dropping the log table
+func (store *storeImplementation) sqlDropTable() (string, error) {
+	sql, err := sb.NewBuilder(sb.DatabaseDriverName(store.db)).
+		Table(store.logTableName).
+		Drop()
 	return sql, err
 }
