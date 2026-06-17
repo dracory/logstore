@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dracory/uid"
+	neatuid "github.com/dracory/neat/support/uid"
 	_ "modernc.org/sqlite"
 )
 
@@ -65,88 +65,9 @@ func TestNewStore_Error_DBRequired(t *testing.T) {
 	}
 }
 
-// func TestWithAutoMigrate(t *testing.T) {
-// 	db := InitDB()
-
-// 	// Initializes automigrateEnabled to False
-// 	s := Store{
-// 		logTableName:       "log_with_automigrate_false",
-// 		db:                 db,
-// 		automigrateEnabled: false,
-// 	}
-
-// 	// Modified to True
-// 	f := WithAutoMigrate(true)
-// 	f(&s)
-
-// 	// Test Results
-// 	if s.automigrateEnabled != true {
-// 		t.Fatal("automigrateEnabled: Expected [true] received [%v]", s.automigrateEnabled)
-// 	}
-
-// 	// Initializes automigrateEnabled to True
-// 	s = Store{
-// 		logTableName:       "log_with_automigrate_true",
-// 		db:                 db,
-// 		automigrateEnabled: true,
-// 	}
-
-// 	// Modified to True
-// 	f = WithAutoMigrate(false)
-// 	f(&s)
-
-// 	// Test Results
-// 	if s.automigrateEnabled == true {
-// 		t.Fatal("automigrateEnabled: Expected [true] received [%v]", s.automigrateEnabled)
-// 	}
-// }
-
-// func TestWithDb(t *testing.T) {
-// 	db := InitDB()
-
-// 	s := Store{
-// 		logTableName:       "LogTable",
-// 		db:                 nil,
-// 		automigrateEnabled: false,
-// 	}
-
-// 	f := WithDb(db)
-
-// 	// DB has to be initialized now
-// 	f(&s)
-
-// 	// db non Nil expected
-// 	if s.db == nil {
-// 		t.Fatal("db initialization failed")
-// 	}
-// }
-
-// func TestWithTableName(t *testing.T) {
-// 	s := Store{
-// 		logTableName:       "",
-// 		db:                 nil,
-// 		automigrateEnabled: false,
-// 	}
-// 	// TC: 1
-// 	table_name := "Table1"
-// 	f := WithTableName(table_name)
-// 	f(&s)
-// 	if s.logTableName != table_name {
-// 		t.Fatal("Expected logTableName [%v], received [%v]", table_name, s.logTableName)
-// 	}
-// 	// TC: 2
-// 	table_name = "Table2"
-// 	f = WithTableName(table_name)
-// 	f(&s)
-// 	if s.logTableName != table_name {
-// 		t.Fatal("Expected logTableName [%v], received [%v]", table_name, s.logTableName)
-// 	}
-// }
-
 func Test_Store_AutoMigrate(t *testing.T) {
 	db := InitDB()
 
-	// Initializes automigrateEnabled to False
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_with_automigrate",
@@ -179,7 +100,7 @@ func Test_Store_Log(t *testing.T) {
 
 	now := time.Now().UTC()
 	logEntry := NewLogWithData(
-		uid.HumanUid(),
+		neatuid.GenerateShortID(),
 		LEVEL_DEBUG,
 		"Test Message",
 		"Test Context",
@@ -421,21 +342,16 @@ func Test_Store_WarnWithContext(t *testing.T) {
 	}
 }
 
-func Test_Store_GetDriverNameAndLogTableName(t *testing.T) {
+func Test_Store_GetLogTableName(t *testing.T) {
 	db := InitDB()
 
 	s, err := NewStore(NewStoreOptions{
 		DB:           db,
 		LogTableName: "log_getters",
-		DbDriverName: "sqlite",
 	})
 
 	if err != nil {
 		t.Fatal("Store could not be created: " + err.Error())
-	}
-
-	if s.GetDriverName() != "sqlite" {
-		t.Fatal("GetDriverName returned unexpected value")
 	}
 
 	if s.GetLogTableName() != "log_getters" {
@@ -449,7 +365,6 @@ func Test_Store_LogList(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_list",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -489,7 +404,6 @@ func Test_Store_LogCreateAndFindByID(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_create_find",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -532,7 +446,6 @@ func Test_Store_LogDelete(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_delete",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -575,7 +488,6 @@ func Test_Store_LogDeleteByID(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_delete_by_id",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -618,7 +530,6 @@ func Test_Store_LogDeleteByID_Error_EmptyID(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_delete_by_id_error",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -638,7 +549,6 @@ func Test_Store_LogCount_Basic(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_count_basic",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -684,7 +594,6 @@ func Test_Store_LogCount_IgnoresLimitAndOffset(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_count_paging",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -722,7 +631,6 @@ func Test_Store_LogFindByID_Error_EmptyID(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_find_by_id_error",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -742,7 +650,6 @@ func Test_Store_LogCount_Error_FromInvalidQuery(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_count_error",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -763,7 +670,6 @@ func Test_Store_LogList_NoMatches(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_list_no_matches",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 
@@ -791,7 +697,6 @@ func Test_Store_LogCount_NoMatches(t *testing.T) {
 	s, err := NewStore(NewStoreOptions{
 		DB:                 db,
 		LogTableName:       "log_count_no_matches",
-		DbDriverName:       "sqlite3",
 		AutomigrateEnabled: true,
 	})
 

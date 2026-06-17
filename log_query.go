@@ -1,12 +1,74 @@
 package logstore
 
-import (
-	"errors"
-	"strings"
+import "errors"
 
-	"github.com/doug-martin/goqu/v9"
-	"github.com/dracory/sb"
-)
+// LogQueryInterface defines the interface for querying logs
+type LogQueryInterface interface {
+	// Validation method
+	Validate() error
+
+	// Field query methods
+
+	IsIDSet() bool
+	GetID() string
+	SetID(id string) LogQueryInterface
+
+	IsIDInSet() bool
+	GetIDIn() []string
+	SetIDIn(ids []string) LogQueryInterface
+
+	IsLevelSet() bool
+	GetLevel() string
+	SetLevel(level string) LogQueryInterface
+
+	IsLevelInSet() bool
+	GetLevelIn() []string
+	SetLevelIn(levels []string) LogQueryInterface
+
+	IsMessageContainsSet() bool
+	GetMessageContains() string
+	SetMessageContains(term string) LogQueryInterface
+
+	IsMessageNotContainsSet() bool
+	GetMessageNotContains() string
+	SetMessageNotContains(term string) LogQueryInterface
+
+	IsContextContainsSet() bool
+	GetContextContains() string
+	SetContextContains(term string) LogQueryInterface
+
+	IsContextNotContainsSet() bool
+	GetContextNotContains() string
+	SetContextNotContains(term string) LogQueryInterface
+
+	IsTimeGteSet() bool
+	GetTimeGte() string
+	SetTimeGte(time string) LogQueryInterface
+
+	IsTimeLteSet() bool
+	GetTimeLte() string
+	SetTimeLte(time string) LogQueryInterface
+
+	IsLimitSet() bool
+	GetLimit() int
+	SetLimit(limit int) LogQueryInterface
+
+	IsOffsetSet() bool
+	GetOffset() int
+	SetOffset(offset int) LogQueryInterface
+
+	IsOrderBySet() bool
+	GetOrderBy() string
+	SetOrderBy(orderBy string) LogQueryInterface
+
+	IsOrderDirectionSet() bool
+	GetOrderDirection() string
+	SetOrderDirection(orderDirection string) LogQueryInterface
+
+	IsColumnsSet() bool
+	GetColumns() []string
+	SetColumns(columns []string) LogQueryInterface
+}
 
 // logQueryImplementation implements the LogQueryInterface
 type logQueryImplementation struct {
@@ -106,102 +168,6 @@ func (q *logQueryImplementation) Validate() error {
 	return nil
 }
 
-func (q *logQueryImplementation) ToSelectDataset(st StoreInterface) (selectDataset *goqu.SelectDataset, columns []any, err error) {
-	if st == nil {
-		return nil, []any{}, errors.New("store cannot be nil")
-	}
-
-	if err := q.Validate(); err != nil {
-		return nil, []any{}, err
-	}
-
-	sql := goqu.Dialect(st.GetDriverName()).From(st.GetLogTableName())
-
-	// ID filter
-	if q.IsIDSet() {
-		sql = sql.Where(goqu.C(COLUMN_ID).Eq(q.GetID()))
-	}
-
-	// ID IN filter
-	if q.IsIDInSet() {
-		sql = sql.Where(goqu.C(COLUMN_ID).In(q.GetIDIn()))
-	}
-
-	// Level filter
-	if q.IsLevelSet() {
-		sql = sql.Where(goqu.C(COLUMN_LEVEL).Eq(q.GetLevel()))
-	}
-
-	// Level IN filter
-	if q.IsLevelInSet() {
-		sql = sql.Where(goqu.C(COLUMN_LEVEL).In(q.GetLevelIn()))
-	}
-
-	// Message contains / not contains filters
-	if q.IsMessageContainsSet() {
-		term := "%" + q.GetMessageContains() + "%"
-		sql = sql.Where(goqu.C(COLUMN_MESSAGE).Like(term))
-	}
-
-	if q.IsMessageNotContainsSet() {
-		term := "%" + q.GetMessageNotContains() + "%"
-		sql = sql.Where(goqu.C(COLUMN_MESSAGE).NotLike(term))
-	}
-
-	// Context contains / not contains filters
-	if q.IsContextContainsSet() {
-		term := "%" + q.GetContextContains() + "%"
-		sql = sql.Where(goqu.C(COLUMN_CONTEXT).Like(term))
-	}
-
-	if q.IsContextNotContainsSet() {
-		term := "%" + q.GetContextNotContains() + "%"
-		sql = sql.Where(goqu.C(COLUMN_CONTEXT).NotLike(term))
-	}
-
-	// Time filters
-	if q.IsTimeGteSet() {
-		sql = sql.Where(goqu.C(COLUMN_TIME).Gte(q.GetTimeGte()))
-	}
-
-	if q.IsTimeLteSet() {
-		sql = sql.Where(goqu.C(COLUMN_TIME).Lte(q.GetTimeLte()))
-	}
-
-	// Limit and offset
-	if q.IsLimitSet() {
-		sql = sql.Limit(uint(q.GetLimit()))
-	}
-
-	if q.IsOffsetSet() {
-		sql = sql.Offset(uint(q.GetOffset()))
-	}
-
-	// Sort order
-	orderDirection := sb.DESC
-	if q.IsOrderDirectionSet() {
-		orderDirection = q.GetOrderDirection()
-	}
-
-	if q.IsOrderBySet() {
-		if strings.EqualFold(orderDirection, sb.ASC) {
-			sql = sql.Order(goqu.I(q.GetOrderBy()).Asc())
-		} else {
-			sql = sql.Order(goqu.I(q.GetOrderBy()).Desc())
-		}
-	}
-
-	// Build columns slice
-	selectColumns := []any{}
-	if q.IsColumnsSet() {
-		for _, col := range q.GetColumns() {
-			selectColumns = append(selectColumns, col)
-		}
-	}
-
-	return sql, selectColumns, nil
-}
-
 // ============================================================================
 // == Getters and Setters
 // ============================================================================
@@ -214,7 +180,6 @@ func (q *logQueryImplementation) GetID() string {
 	if q.IsIDSet() {
 		return q.id
 	}
-
 	return ""
 }
 
@@ -232,7 +197,6 @@ func (q *logQueryImplementation) GetIDIn() []string {
 	if q.IsIDInSet() {
 		return q.idIn
 	}
-
 	return []string{}
 }
 
@@ -250,7 +214,6 @@ func (q *logQueryImplementation) GetLevel() string {
 	if q.IsLevelSet() {
 		return q.level
 	}
-
 	return ""
 }
 
@@ -268,7 +231,6 @@ func (q *logQueryImplementation) GetLevelIn() []string {
 	if q.IsLevelInSet() {
 		return q.levelIn
 	}
-
 	return []string{}
 }
 
@@ -286,7 +248,6 @@ func (q *logQueryImplementation) GetMessageContains() string {
 	if q.IsMessageContainsSet() {
 		return q.messageContains
 	}
-
 	return ""
 }
 
@@ -304,7 +265,6 @@ func (q *logQueryImplementation) GetMessageNotContains() string {
 	if q.IsMessageNotContainsSet() {
 		return q.messageNotContains
 	}
-
 	return ""
 }
 
@@ -322,7 +282,6 @@ func (q *logQueryImplementation) GetContextContains() string {
 	if q.IsContextContainsSet() {
 		return q.contextContains
 	}
-
 	return ""
 }
 
@@ -340,7 +299,6 @@ func (q *logQueryImplementation) GetContextNotContains() string {
 	if q.IsContextNotContainsSet() {
 		return q.contextNotContains
 	}
-
 	return ""
 }
 
@@ -358,13 +316,12 @@ func (q *logQueryImplementation) GetTimeGte() string {
 	if q.IsTimeGteSet() {
 		return q.timeGte
 	}
-
 	return ""
 }
 
-func (q *logQueryImplementation) SetTimeGte(timeGte string) LogQueryInterface {
+func (q *logQueryImplementation) SetTimeGte(time string) LogQueryInterface {
 	q.isTimeGteSet = true
-	q.timeGte = timeGte
+	q.timeGte = time
 	return q
 }
 
@@ -376,13 +333,12 @@ func (q *logQueryImplementation) GetTimeLte() string {
 	if q.IsTimeLteSet() {
 		return q.timeLte
 	}
-
 	return ""
 }
 
-func (q *logQueryImplementation) SetTimeLte(timeLte string) LogQueryInterface {
+func (q *logQueryImplementation) SetTimeLte(time string) LogQueryInterface {
 	q.isTimeLteSet = true
-	q.timeLte = timeLte
+	q.timeLte = time
 	return q
 }
 
@@ -394,7 +350,6 @@ func (q *logQueryImplementation) GetLimit() int {
 	if q.IsLimitSet() {
 		return q.limit
 	}
-
 	return 0
 }
 
@@ -412,7 +367,6 @@ func (q *logQueryImplementation) GetOffset() int {
 	if q.IsOffsetSet() {
 		return q.offset
 	}
-
 	return 0
 }
 
@@ -430,7 +384,6 @@ func (q *logQueryImplementation) GetOrderDirection() string {
 	if q.IsOrderDirectionSet() {
 		return q.orderDirection
 	}
-
 	return ""
 }
 
@@ -448,12 +401,28 @@ func (q *logQueryImplementation) GetOrderBy() string {
 	if q.IsOrderBySet() {
 		return q.orderBy
 	}
-
 	return ""
 }
 
 func (q *logQueryImplementation) SetOrderBy(orderBy string) LogQueryInterface {
 	q.isOrderBySet = true
 	q.orderBy = orderBy
+	return q
+}
+
+func (q *logQueryImplementation) IsColumnsSet() bool {
+	return q.isColumnsSet
+}
+
+func (q *logQueryImplementation) GetColumns() []string {
+	if q.IsColumnsSet() {
+		return q.columns
+	}
+	return []string{}
+}
+
+func (q *logQueryImplementation) SetColumns(columns []string) LogQueryInterface {
+	q.isColumnsSet = true
+	q.columns = columns
 	return q
 }

@@ -3,7 +3,6 @@ package logstore
 import (
 	"context"
 	"database/sql"
-	"strings"
 	"testing"
 )
 
@@ -44,15 +43,14 @@ func Test_LogQueryImplementation_Validate_MessageAndContextTerms(t *testing.T) {
 	}
 }
 
-// helper store stub implementing just enough of StoreInterface for ToSelectDataset
-
+// helper store stub implementing just enough of StoreInterface for testing
 type logQueryTestStore struct{}
 
 func (s *logQueryTestStore) SetLogTableName(logTableName string)                  {}
 func (s *logQueryTestStore) MigrateDown(ctx context.Context, tx ...*sql.Tx) error { return nil }
 func (s *logQueryTestStore) MigrateUp(ctx context.Context, tx ...*sql.Tx) error   { return nil }
 func (s *logQueryTestStore) EnableDebug(debug bool)                               {}
-func (s *logQueryTestStore) GetDriverName() string                                { return "sqlite" }
+func (s *logQueryTestStore) GetDB() *sql.DB                                       { return nil }
 func (s *logQueryTestStore) GetLogTableName() string                              { return "logs" }
 func (s *logQueryTestStore) Log(logEntry LogInterface) error                      { return nil }
 func (s *logQueryTestStore) LogCreate(ctx context.Context, logEntry LogInterface) error {
@@ -94,52 +92,6 @@ func (s *logQueryTestStore) LogFindByID(ctx context.Context, id string) (LogInte
 	return nil, nil
 }
 
-func (s *logQueryTestStore) LogCount(ctx context.Context, query LogQueryInterface) (int, error) {
+func (s *logQueryTestStore) LogCount(ctx context.Context, query LogQueryInterface) (int64, error) {
 	return 0, nil
-}
-
-func Test_LogQueryImplementation_ToSelectDataset_MessageAndContextFilters(t *testing.T) {
-	st := &logQueryTestStore{}
-
-	q := LogQuery().
-		SetMessageContains("error").
-		SetMessageNotContains("debug").
-		SetContextContains("user").
-		SetContextNotContains("trace")
-
-	selectDataset, _, err := q.ToSelectDataset(st)
-	if err != nil {
-		t.Fatalf("unexpected error from ToSelectDataset: %v", err)
-	}
-
-	sql, args, err := selectDataset.Prepared(true).ToSQL()
-	if err != nil {
-		t.Fatalf("unexpected error generating SQL: %v", err)
-	}
-
-	// Basic checks that our LIKE/NOT LIKE clauses are present in the SQL
-	expectedSqlTerms := []string{
-		"message", "LIKE",
-		"message", "NOT LIKE",
-		"context", "LIKE",
-		"context", "NOT LIKE",
-	}
-
-	for _, term := range expectedSqlTerms {
-		if !strings.Contains(sql, term) {
-			t.Fatalf("expected SQL to contain %q, got: %s", term, sql)
-		}
-	}
-
-	// And the concrete LIKE values should be present in the prepared args
-	if len(args) != 4 {
-		t.Fatalf("expected 4 args, got %d (%v)", len(args), args)
-	}
-
-	expectedArgs := []string{"%error%", "%debug%", "%user%", "%trace%"}
-	for i, expected := range expectedArgs {
-		if args[i] != expected {
-			t.Fatalf("expected arg[%d] = %q, got %v", i, expected, args[i])
-		}
-	}
 }
