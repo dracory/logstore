@@ -536,18 +536,26 @@ func (st *storeImplementation) LogList(ctx context.Context, query LogQueryInterf
 		id := ""
 		if v, ok := result[COLUMN_ID].(string); ok {
 			id = v
+		} else if v, ok := result[COLUMN_ID].([]byte); ok {
+			id = string(v)
 		}
 		level := ""
 		if v, ok := result[COLUMN_LEVEL].(string); ok {
 			level = v
+		} else if v, ok := result[COLUMN_LEVEL].([]byte); ok {
+			level = string(v)
 		}
 		message := ""
 		if v, ok := result[COLUMN_MESSAGE].(string); ok {
 			message = v
+		} else if v, ok := result[COLUMN_MESSAGE].([]byte); ok {
+			message = string(v)
 		}
 		contextStr := ""
 		if v, ok := result[COLUMN_CONTEXT].(string); ok {
 			contextStr = v
+		} else if v, ok := result[COLUMN_CONTEXT].([]byte); ok {
+			contextStr = string(v)
 		}
 
 		var t time.Time
@@ -557,6 +565,8 @@ func (st *storeImplementation) LogList(ctx context.Context, query LogQueryInterf
 				t = vt
 			case string:
 				t = carbon.Parse(vt, carbon.UTC).StdTime()
+			case []byte:
+				t = carbon.Parse(string(vt), carbon.UTC).StdTime()
 			}
 		}
 
