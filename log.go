@@ -2,8 +2,8 @@ package logstore
 
 import (
 	"time"
+	"uuid"
 
-	neatuid "github.com/dracory/neat/support/uid"
 	"github.com/dromara/carbon/v2"
 )
 
@@ -42,7 +42,7 @@ var _ LogInterface = (*logImplementation)(nil)
 // NewLog creates a new log with the current UTC time
 func NewLog() LogInterface {
 	return &logImplementation{
-		id:      neatuid.GenerateShortID(),
+		id:      uuid.NewV7().String(),
 		level:   LEVEL_INFO,
 		message: "",
 		context: "",

@@ -8,11 +8,11 @@ import (
 	"log/slog"
 	"os"
 	"time"
+	"uuid"
 
 	"github.com/dracory/neat"
 	contractsorm "github.com/dracory/neat/contracts/database/orm"
 	contractsschema "github.com/dracory/neat/contracts/database/schema"
-	neatuid "github.com/dracory/neat/support/uid"
 	"github.com/dromara/carbon/v2"
 )
 
@@ -429,7 +429,7 @@ func (st *storeImplementation) LogCreate(ctx context.Context, logEntry LogInterf
 
 	id := logEntry.GetID()
 	if id == "" {
-		id = neatuid.GenerateShortID()
+		id = uuid.NewV7().String()
 		logEntry.SetID(id)
 	}
 

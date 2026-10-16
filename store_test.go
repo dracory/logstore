@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"testing"
 	"time"
+	"uuid"
 
-	neatuid "github.com/dracory/neat/support/uid"
 	_ "modernc.org/sqlite"
 )
 
@@ -100,7 +100,7 @@ func Test_Store_Log(t *testing.T) {
 
 	now := time.Now().UTC()
 	logEntry := NewLogWithData(
-		neatuid.GenerateShortID(),
+		uuid.NewV7().String(),
 		LEVEL_DEBUG,
 		"Test Message",
 		"Test Context",
