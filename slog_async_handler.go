@@ -37,6 +37,7 @@ type SlogAsyncHandler struct {
 
 type slogAsyncState struct {
 	queue  chan slog.Record
+	done   chan struct{}
 	wg     sync.WaitGroup
 	once   sync.Once
 	closed atomic.Bool
@@ -57,12 +58,30 @@ func NewSlogAsyncHandlerWithBuffer(logStore StoreInterface, capacity int) *SlogA
 		capacity = SlogAsyncBufferSizeDefault
 	}
 	inner := NewSlogHandler(logStore)
-	state := &slogAsyncState{queue: make(chan slog.Record, capacity)}
+	state := &slogAsyncState{
+		queue: make(chan slog.Record, capacity),
+		done:  make(chan struct{}),
+	}
 	state.wg.Add(1)
 	go func() {
 		defer state.wg.Done()
-		for record := range state.queue {
-			_ = inner.Handle(context.Background(), record)
+		for {
+			select {
+			case record := <-state.queue:
+				_ = inner.Handle(context.Background(), record)
+			case <-state.done:
+				// Drain any records still queued, then exit. The queue
+				// is never closed — a late sender cannot panic, its
+				// record simply sits unread and is GC'd with the queue.
+				for {
+					select {
+					case record := <-state.queue:
+						_ = inner.Handle(context.Background(), record)
+					default:
+						return
+					}
+				}
+			}
 		}
 	}()
 	return &SlogAsyncHandler{inner: inner, state: state, dropped: &atomic.Uint64{}}
@@ -102,13 +121,16 @@ func (h *SlogAsyncHandler) WithGroup(name string) slog.Handler {
 	return &SlogAsyncHandler{inner: h.inner.WithGroup(name).(*SlogHandler), state: h.state, dropped: h.dropped}
 }
 
-// Drain closes the queue and waits for the worker to flush all pending
-// records to the wrapped handler. Records logged after Drain are dropped
-// silently. Safe to call more than once.
+// Drain stops accepting records and waits for the worker to flush all
+// pending records to the wrapped handler. The queue is never closed —
+// records logged after Drain are dropped silently (the closed flag is
+// checked before enqueue, and a send that slips past the check lands in
+// a queue nobody reads rather than panicking on a closed channel).
+// Safe to call more than once.
 func (h *SlogAsyncHandler) Drain() {
 	h.state.once.Do(func() {
 		h.state.closed.Store(true)
-		close(h.state.queue)
+		close(h.state.done)
 		h.state.wg.Wait()
 	})
 }
