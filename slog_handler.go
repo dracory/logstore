@@ -66,6 +66,7 @@ func (handler *SlogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 		slogHandler: handler.slogHandler.WithAttrs(attrs),
 		buffer:      handler.buffer,
 		mutex:       handler.mutex,
+		logStore:    handler.logStore,
 	}
 }
 
@@ -74,6 +75,7 @@ func (handler *SlogHandler) WithGroup(name string) slog.Handler {
 		slogHandler: handler.slogHandler.WithGroup(name),
 		buffer:      handler.buffer,
 		mutex:       handler.mutex,
+		logStore:    handler.logStore,
 	}
 }
 
